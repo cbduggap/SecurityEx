@@ -27,6 +27,7 @@
 #define PAGING_4K_ADDRESS_MASK_64 0x000FFFFFFFFFF000ull
 #define IA32_PG_U                   BIT2
 #define IA32_PG_PS                  BIT7
+#define CR0_WP                      BIT16
 
 #define IA32_DPL(x)  ((x) << 5)
 
@@ -209,6 +210,8 @@ InitUserModePaging (
 
   DEBUG ((EFI_D_INFO, "InitUserModePaging...\n"));
 
+  // Disable write protection
+  AsmWriteCr0 (AsmReadCr0 () & ~CR0_WP);
   PageTable = AsmReadCr3 () & PAGING_4K_ADDRESS_MASK_64;
 #if defined (MDE_CPU_X64)
   L4PageTable = (UINT64 *)PageTable;
@@ -253,7 +256,9 @@ InitUserModePaging (
 #if defined (MDE_CPU_X64)
   }
 #endif
-
+  //Enable write protection
+  AsmWriteCr0 (AsmReadCr0 () | CR0_WP);
+ 
   DEBUG ((EFI_D_INFO, "InitUserModePaging Done\n"));
 }
 
